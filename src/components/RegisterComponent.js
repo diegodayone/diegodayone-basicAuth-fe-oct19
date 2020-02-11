@@ -2,7 +2,7 @@ import React from 'react';
 import '../App.css';
 import { useState } from "react"
 import {withRouter} from "react-router-dom"
-import {connect} from "react-redux"
+import { connect }from "react-redux"
 
 const mapStateToProps = state => state
 const mapDispatchToProps = dispatch => ({
@@ -12,32 +12,38 @@ const mapDispatchToProps = dispatch => ({
   }) 
 })
 
-function LoginComponent(props) {
+
+function RegisterComponent(props) {
 
   const [ username, setUsername] = useState("")
   const [ password, setPassword] = useState("")
+  const [ role, setRole] = useState("user")
   const [ saveCredentials, setSaveCredentials] = useState(false)
   const [ error, setError] = useState(undefined)
 
-  const login = async () => {
+  const register = async () => {
     //create my "token" starting from username and password
     //contact the APIs to prove identity
-    const base64usernameAndPassword = btoa(username + ":" + password);
-    const resp = await fetch("http://localhost:3500/testauth", {
+    const resp = await fetch("http://localhost:3500/auth/register", {
       headers: {
-        "Authorization": "Basic " + base64usernameAndPassword
-      }
+        "Content-Type": "application/json"
+      },
+      method: "POST",
+      body: JSON.stringify({
+        username,
+        password,
+        role
+      })
     })
 
     if (resp.ok){
       const respJson = await resp.json();
       console.log(respJson)
-      //props.setUserAuth(base64usernameAndPassword)
+      const base64usernameAndPassword = btoa(username + ":" + password);
       if (saveCredentials)
         localStorage.setItem("userBase64", base64usernameAndPassword)
         
       props.setUserToken(base64usernameAndPassword)
-
       props.history.push("/profile")
     }
     else{
@@ -53,12 +59,13 @@ function LoginComponent(props) {
       <header className="App-header">
         <input type="text" placeholder="username" value={username} onChange={e => setUsername(e.target.value)}></input>
         <input type="password" placeholder="*********" value={password} onChange={e => setPassword(e.target.value)}></input>
+        <input type="text" placeholder="role" value={role} onChange={e => setRole(e.target.value)}></input>
         <input type="checkbox" value={saveCredentials} onChange={e => setSaveCredentials(!saveCredentials)}/>
-        <input type="button" onClick={login} value="Login"></input>
+        <input type="button" onClick={register} value="Login"></input>
         {error && <h2>{error}</h2>}
       </header>
     </div>
   );
 }
 
-export default withRouter(connect(mapStateToProps, mapDispatchToProps)(LoginComponent));
+export default withRouter(connect(mapStateToProps, mapDispatchToProps)(RegisterComponent));
