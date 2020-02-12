@@ -24,7 +24,7 @@ function RegisterComponent(props) {
   const register = async () => {
     //create my "token" starting from username and password
     //contact the APIs to prove identity
-    const resp = await fetch("http://localhost:3500/auth/register", {
+    const resp = await fetch("http://localhost:3451/user/signup", {
       headers: {
         "Content-Type": "application/json"
       },
@@ -39,11 +39,10 @@ function RegisterComponent(props) {
     if (resp.ok){
       const respJson = await resp.json();
       console.log(respJson)
-      const base64usernameAndPassword = btoa(username + ":" + password);
       if (saveCredentials)
-        localStorage.setItem("userBase64", base64usernameAndPassword)
+        localStorage.setItem("access_token", respJson.access_token)
         
-      props.setUserToken(base64usernameAndPassword)
+      props.setUserToken(respJson.access_token)
       props.history.push("/profile")
     }
     else{
@@ -60,6 +59,7 @@ function RegisterComponent(props) {
         <input type="text" placeholder="username" value={username} onChange={e => setUsername(e.target.value)}></input>
         <input type="password" placeholder="*********" value={password} onChange={e => setPassword(e.target.value)}></input>
         <input type="text" placeholder="role" value={role} onChange={e => setRole(e.target.value)}></input>
+        <span>Save Credentials?</span>
         <input type="checkbox" value={saveCredentials} onChange={e => setSaveCredentials(!saveCredentials)}/>
         <input type="button" onClick={register} value="Login"></input>
         {error && <h2>{error}</h2>}

@@ -22,22 +22,24 @@ function LoginComponent(props) {
   const login = async () => {
     //create my "token" starting from username and password
     //contact the APIs to prove identity
-    const base64usernameAndPassword = btoa(username + ":" + password);
-    const resp = await fetch("http://localhost:3500/testauth", {
+    const resp = await fetch("http://localhost:3451/user/signin",  {
+      body: JSON.stringify({
+        username,
+        password
+      }),
+      method: "POST",
       headers: {
-        "Authorization": "Basic " + base64usernameAndPassword
+        "Content-Type": "application/json"
       }
     })
 
     if (resp.ok){
       const respJson = await resp.json();
       console.log(respJson)
-      //props.setUserAuth(base64usernameAndPassword)
       if (saveCredentials)
-        localStorage.setItem("userBase64", base64usernameAndPassword)
+        localStorage.setItem("access_token", respJson.access_token)
         
-      props.setUserToken(base64usernameAndPassword)
-
+      props.setUserToken(respJson.access_token)
       props.history.push("/profile")
     }
     else{
@@ -53,6 +55,7 @@ function LoginComponent(props) {
       <header className="App-header">
         <input type="text" placeholder="username" value={username} onChange={e => setUsername(e.target.value)}></input>
         <input type="password" placeholder="*********" value={password} onChange={e => setPassword(e.target.value)}></input>
+        <span>Remember me</span>
         <input type="checkbox" value={saveCredentials} onChange={e => setSaveCredentials(!saveCredentials)}/>
         <input type="button" onClick={login} value="Login"></input>
         {error && <h2>{error}</h2>}

@@ -1,30 +1,54 @@
 import React from "react"
 import { connect} from "react-redux"
+import Tweet from "./TweetComponent"
 
 const mapStateToProps = state => state
 
 class MyProfile extends React.Component {
 
     state= {
-        user: undefined
+        tweets:[],
+        text: ""
+    }
+
+    sendTweet = async () =>{
+        const tweetsResp = await fetch("http://localhost:3451/tweets", {
+            headers: {
+                "Authorization": "Bearer " + this.props.userToken,
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                text: this.state.text
+            }),
+            method: "POST"
+        })
+        const tweet = await tweetsResp.json();
+        this.setState({ 
+            tweets: [tweet, ...this.state.tweets] //this.state.tweets.concat(tweet)
+            , text: ""})
     }
 
     render(){
         return <div>
             I'm authorized
-            {this.state.user && <h2>Hey i'm {this.state.user.username} and I'm {this.state.user.role}</h2> }
+            {/* {this.state.user && <h2>Hey i'm {this.state.user.username} and I'm {this.state.user.role}</h2> } */}
+            {this.state.tweets.map((tweet, i) => <Tweet ket={i} tweet={tweet} />)}
+
+            <input type="text" placeholder="new tweet" value={this.state.text} onChange={(e) => this.setState({text: e.target.value})} />
+            <input type="button" onClick={this.sendTweet} />
         </div>
     }
 
     componentDidMount = async () =>{
-        const user = await fetch("http://localhost:3500/testauth", {
+        const tweetsResp = await fetch("http://localhost:3451/tweets/myTweets", {
             headers: {
-                "Authorization": "Basic " + this.props.userToken
+                "Authorization": "Bearer " + this.props.userToken
             }
         })
 
-        const userJson = await user.json();
-        this.setState({ user: userJson})
+        const tweets = await tweetsResp.json();
+        console.log(tweets)
+        this.setState({ tweets: tweets})
     }
 
 }

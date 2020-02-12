@@ -9,45 +9,59 @@ import { connect } from "react-redux"
 const mapStateToProps = state => state
 const mapDispatchToProps = dispatch => ({
     setUserToken: base64 => dispatch({
-      type:"SET_USERBASE64",
-      payload: base64
-    }) 
-  })
-  
+        type: "SET_USERBASE64",
+        payload: base64
+    })
+})
+
 
 class MainComponent extends React.Component {
     // state = {
     //     userAuth: undefined
     // }
-    render(){
+    render() {
         return (
-        <Router>
-            <h1> Welcome to our app! Ready to login or register!</h1>
-            <div style={{ display: "flex", justifyContent: "space-evenly"}}>
-                <Link to="/register">Register</Link>
-                <Link to="/login">Login</Link>
-                <Link to="/profile">Profile</Link>
-            </div>
-            <Switch>
-                <Route path="/register">
-                    <RegisterComponent  /> 
-                    {/* setUserAuth={(userAuth) => this.setState({ userAuth: userAuth})} */}
-                </Route>
-                <Route path="/login">
-                    <LoginComponent />
-                    {/* setUserAuth={(userAuth) => this.setState({ userAuth: userAuth})} */}
-                </Route>
-                <PrivateRoute isAuthenticated={this.props.userToken} path="/profile" component={MyProfile}/>
-            </Switch>
-        </Router>)
+            <Router>
+                <h1> Welcome to our app! Ready to login or register!</h1>
+                <div style={{ display: "flex", justifyContent: "space-evenly" }}>
+                    <Link to="/register">Register</Link>
+                    <Link to="/login">Login</Link>
+                    <Link to="/profile">Profile</Link>
+                </div>
+                <Switch>
+                    <Route path="/register">
+                        <RegisterComponent />{/* setUserAuth={(userAuth) => this.setState({ userAuth: userAuth})} */}
+                    </Route>
+                    <Route path="/login">
+                        <LoginComponent />{/* setUserAuth={(userAuth) => this.setState({ userAuth: userAuth})} */}
+                    </Route>
+                    <PrivateRoute isAuthenticated={this.props.userToken} path="/profile" component={MyProfile} />
+                </Switch>
+            </Router>)
     }
 
-    componentDidMount = () => {
-        const currentBase64 = localStorage.getItem("userBase64")
-        if (currentBase64)
-            this.props.setUserToken(currentBase64)
-    }
+    componentDidMount = async () => {
+        const access_token = localStorage.getItem("access_token") //getting the access_token from  the local storage
+        if (access_token) { //was the user already signed in?
+            const response = await fetch("http://localhost:3451/user/refresh", { //is the token still valid?
+                headers: { 
+                    "Authorization": "Bearer " + access_token
+                },
+                method: "POST"
+            })
 
+            if (response.ok){ //if it's valid, i'm replacing the old one and send it to the store
+                const userJson = await response.json();
+                this.props.setUserToken(userJson.access_token)
+                localStorage.setItem("access_token", userJson.access_token)
+                console.log("token was ok, refreshed")
+            }
+            else{ //else, token is not valid, let me remove it!
+                delete localStorage["access_token"]
+                console.log("token was expired, removed")
+            }
+        }
+    }
 }
 
 export default connect(mapStateToProps, mapDispatchToProps)(MainComponent)
