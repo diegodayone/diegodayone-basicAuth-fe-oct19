@@ -3,6 +3,7 @@ import '../App.css';
 import { useState } from "react"
 import {withRouter} from "react-router-dom"
 import {connect} from "react-redux"
+import FacebookLoginWithButton from "react-facebook-login"
 
 const mapStateToProps = state => state
 const mapDispatchToProps = dispatch => ({
@@ -50,6 +51,36 @@ function LoginComponent(props) {
     }
   }
 
+  const facebookLogin = async (fbData) => {
+    console.log(fbData)
+    if (fbData.accessToken){
+      const apiResp = await fetch("http://localhost:3451/user/facebookLogin", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          access_token: fbData.accessToken
+        })
+      })
+
+      if (apiResp.ok){
+        const respJson = await apiResp.json()
+        localStorage.setItem("access_token", respJson.access_token)
+        props.setUserToken(respJson.access_token)
+        props.history.push("/profile")
+      }
+      else{
+        console.log(apiResp)
+        setError("Some problem with your token!")
+      }
+    }
+    else{
+      console.log(fbData)
+      setError("Cannot login on facebook ")
+    }
+  }
+
   return (
     <div className="App">
       <header className="App-header">
@@ -59,6 +90,13 @@ function LoginComponent(props) {
         <input type="checkbox" value={saveCredentials} onChange={e => setSaveCredentials(!saveCredentials)}/>
         <input type="button" onClick={login} value="Login"></input>
         {error && <h2>{error}</h2>}
+        <FacebookLoginWithButton
+          appId="953776218349854"
+          fields="name,picture,email"
+          icon="fa-facebook"
+          callback={facebookLogin}
+        />
+
       </header>
     </div>
   );
