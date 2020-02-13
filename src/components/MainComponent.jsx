@@ -6,6 +6,7 @@ import PrivateRoute from "./PrivateRoute"
 import RegisterComponent from "./RegisterComponent"
 import { connect } from "react-redux"
 import SpecialComponent from "./SpecialComponent"
+import CallbackComponent from "./CallbackComponent"
 
 const mapStateToProps = state => state
 const mapDispatchToProps = dispatch => ({
@@ -25,10 +26,14 @@ class MainComponent extends React.Component {
             <Router>
                 <h1> Welcome to our app! Ready to login or register!</h1>
                 <div style={{ display: "flex", justifyContent: "space-evenly" }}>
-                    <Link to="/register">Register</Link>
-                    <Link to="/login">Login</Link>
-                    <Link to="/profile">Profile</Link>
-                    <Link to="/specialOne">SpecialThing</Link>
+                    {!this.props.userToken ? <>
+                        <Link to="/register">Register</Link>
+                        <Link to="/login">Login</Link>  
+                    </> : <>
+                        <Link to="/profile">Logout</Link>
+                        <Link to="/profile">Profile</Link>
+                        <Link to="/specialOne">SpecialThing</Link> 
+                    </> }
                 </div>
                 <Switch>
                     <Route path="/register">
@@ -36,6 +41,9 @@ class MainComponent extends React.Component {
                     </Route>
                     <Route path="/login">
                         <LoginComponent />{/* setUserAuth={(userAuth) => this.setState({ userAuth: userAuth})} */}
+                    </Route>
+                    <Route path="/callback">
+                        <CallbackComponent />{/* setUserAuth={(userAuth) => this.setState({ userAuth: userAuth})} */}
                     </Route>
                     <PrivateRoute isAuthenticated={this.props.userToken} path="/profile" component={MyProfile} />
                     <PrivateRoute isAuthenticated={this.props.userToken} path="/specialOne" component={SpecialComponent} />

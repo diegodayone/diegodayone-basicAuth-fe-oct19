@@ -3,7 +3,7 @@ import '../App.css';
 import { useState } from "react"
 import {withRouter} from "react-router-dom"
 import {connect} from "react-redux"
-import FacebookLoginWithButton from "react-facebook-login"
+ import FacebookLoginWithButton from "react-facebook-login"
 
 const mapStateToProps = state => state
 const mapDispatchToProps = dispatch => ({
@@ -97,6 +97,8 @@ function LoginComponent(props) {
           callback={facebookLogin}
         />
 
+        <a href="http://localhost:3451/auth/github">Login With GitHub</a>
+        <a href="http://localhost:3451/auth/facebook">Login With Facebook</a>
       </header>
     </div>
   );
